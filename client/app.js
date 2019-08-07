@@ -1,6 +1,6 @@
 import React from 'react'
-
 import {Navbar} from './components'
+import QueryTest from './components/query-test'
 import Routes from './routes'
 
 const App = () => {
@@ -8,6 +8,7 @@ const App = () => {
     <div>
       <Navbar />
       <Routes />
+      <QueryTest />
     </div>
   )
 }
