@@ -1,3 +1,4 @@
+import axios from 'axios'
 import React, {Component} from 'react'
 import QueryComponent from './query-component'
 
@@ -7,6 +8,11 @@ export default class QueryTest extends Component {
     this.state = {
       id: null
     }
+  }
+
+  async handleClick() {
+    const {data} = await axios.get('/api/graphql/dbs')
+    console.log(data)
   }
 
   render() {
@@ -21,6 +27,9 @@ export default class QueryTest extends Component {
           <option>5</option>
         </select>
         <QueryComponent userId={this.state.id} />
+        <button type="button" onClick={this.handleClick}>
+          Get All DBs
+        </button>
       </div>
     )
   }
