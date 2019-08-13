@@ -1,35 +1,31 @@
-import axios from 'axios'
 import React, {Component} from 'react'
+import {connect} from 'react-redux'
+import {getDbsThunk, getTablesThunk} from '../store'
 import {Chart} from './index'
 
-export default class HomePage extends Component {
+class DisconnectedHomePage extends Component {
   constructor() {
     super()
     this.state = {
-      dbs: [],
-      selectedDb: '',
-      tables: null
+      selectedDb: ''
     }
     this.handleChange = this.handleChange.bind(this)
   }
 
   async componentDidMount() {
-    const {data} = await axios.get('/api/graphql/dbs')
-    this.setState({
-      dbs: data.sort()
-    })
+    await this.props.getDbs()
   }
 
   async handleChange(e) {
     const db = e.target.value
-    const {data} = await axios.get(`/api/graphql/dbs/${db}`)
+    await this.props.getTables(db)
     this.setState({
-      selectedDb: db,
-      tables: data
+      selectedDb: db
     })
   }
 
   render() {
+    const {dbs, tables} = this.props
     return (
       <div>
         <h1>Welcome To Dragon-Drop</h1>
@@ -37,12 +33,16 @@ export default class HomePage extends Component {
           <option value="" disabled>
             Select A Database...
           </option>
-          {this.state.dbs.map(db => <option value={db}>{db}</option>)}
+          {dbs ? (
+            dbs.map(db => <option value={db}>{db}</option>)
+          ) : (
+            <option>DBs Not Found</option>
+          )}
         </select>
-        {this.state.tables ? (
+        {tables ? (
           <div>
             <p>Showing Tables From {this.state.selectedDb}</p>
-            <ul>{this.state.tables.map(table => <li>{table}</li>)}</ul>
+            <ul>{tables.map(table => <li>{table}</li>)}</ul>
           </div>
         ) : null}
         <Chart />
@@ -50,3 +50,15 @@ export default class HomePage extends Component {
     )
   }
 }
+
+const mapState = state => ({
+  dbs: state.db.dbs,
+  tables: state.db.tables
+})
+
+const mapDispatch = dispatch => ({
+  getDbs: () => dispatch(getDbsThunk()),
+  getTables: db => dispatch(getTablesThunk(db))
+})
+
+export default connect(mapState, mapDispatch)(DisconnectedHomePage)
