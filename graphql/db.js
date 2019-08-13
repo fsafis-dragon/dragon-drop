@@ -1,5 +1,5 @@
 // const { encrypt } = require('../server/util');
-// const pg = require('pg');
+const pg = require('pg')
 
 const DB_CONNECTION = {
   user: '',
@@ -57,27 +57,6 @@ const getAllDbs = async () => {
 // of having to reaload any queries after CRUD operations - if they succeed we just have the front end
 // proceed to add the values to the GUI itself.. But we let the front end if anything fails here so it
 // doesn't reflect inaccurate information.
-const createDatabase = async databaseName => {
-  const pool = new pg.Pool(DB_CONNECTION)
-  try {
-    await pool.query(`CREATE DATABASE "${databaseName}"`)
-    return [databaseName]
-  } catch (error) {
-    console.error(error)
-    return error.message
-  }
-}
-
-const deleteDatabase = async databaseName => {
-  const pool = new pg.Pool(DB_CONNECTION)
-  try {
-    await pool.query(`DROP DATABASE "${databaseName}"`)
-    return null
-  } catch (error) {
-    console.error(error)
-    return error.message
-  }
-}
 
 const getAllTables = async database => {
   setDatabase(database)
@@ -95,33 +74,6 @@ const getAllTables = async database => {
   }
 }
 
-const createTable = async (selectedDb, newTableName) => {
-  setDatabase(selectedDb)
-  const pool = new pg.Pool(DB_CONNECTION)
-  try {
-    await pool.query(
-      `CREATE TABLE "${newTableName}" (
-      "id" SERIAL PRIMARY KEY
-      );`
-    )
-    return [newTableName]
-  } catch (error) {
-    console.error(error)
-    return error.message
-  }
-}
-
-const deleteTable = async (selectedDb, selectedTableName) => {
-  setDatabase(selectedDb)
-  const pool = new pg.Pool(DB_CONNECTION)
-  try {
-    await pool.query(`DROP TABLE "${selectedTableName}"`)
-    return null
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const getTableData = async (table, database) => {
   setDatabase(database)
   const pool = new pg.Pool(DB_CONNECTION)
@@ -133,52 +85,9 @@ const getTableData = async (table, database) => {
   }
 }
 
-const removeTableRow = async (table, database, id) => {
-  setDatabase(database)
-  const pool = new pg.Pool(DB_CONNECTION)
-  try {
-    const response = await pool.query(`DELETE FROM "${table}" where id=${id}`)
-    return response.rows
-  } catch (error) {
-    console.error(error)
-    return error.message
-  }
-}
-
-const tranformCellToSql = ({key, value, id}) => {
-  return [`"${key}" = $${1}`, [value, id]]
-}
-
-const updateTableData = async (table, database, allUpdatedCells) => {
-  setDatabase(database)
-  const pool = new pg.Pool(DB_CONNECTION)
-  const keysAndParamsNestedArr = allUpdatedCells.reduce((accum, cell) => {
-    // get key from cell and create object with key of id and value of field(ie key)=value
-    return accum.concat([tranformCellToSql(cell)])
-  }, [])
-  const queryArr = keysAndParamsNestedArr.map(([updateStr, values]) => [
-    `UPDATE "${table}" SET ${updateStr} WHERE id=$${values.length} returning *`,
-    values
-  ])
-  try {
-    for (const [queryStr, params] of queryArr) {
-      await pool.query(queryStr, params)
-    }
-  } catch (error) {
-    console.error(error)
-    return error.message
-  }
-}
-
 module.exports = {
   getAllTables,
   getAllDbs,
   getTableData,
-  updateTableData,
-  createTable,
-  deleteTable,
-  removeTableRow,
-  createDatabase,
-  setUserProvidedDbConnection,
-  deleteDatabase
+  setUserProvidedDbConnection
 }
