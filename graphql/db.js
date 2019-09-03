@@ -89,5 +89,6 @@ module.exports = {
   getAllTables,
   getAllDbs,
   getTableData,
-  setUserProvidedDbConnection
+  setUserProvidedDbConnection,
+  DB_CONNECTION
 }
